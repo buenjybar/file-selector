@@ -124,6 +124,9 @@ function fromDataTransferItem(item: DataTransferItem, entry?: FileSystemEntry | 
     if (typeof (item as any).getAsFileSystemHandle === 'function') {
         return (item as any).getAsFileSystemHandle()
             .then(async (h: any) => {
+                if (!h) {
+                    return notAFile(item);
+                }
                 const file = await h.getFile();
                 file.handle = h;
                 return toFileWithPath(file);
@@ -131,10 +134,14 @@ function fromDataTransferItem(item: DataTransferItem, entry?: FileSystemEntry | 
     }
     const file = item.getAsFile();
     if (!file) {
-        return Promise.reject(`${item} is not a File`);
+        return notAFile(item);
     }
     const fwp = toFileWithPath(file, entry?.fullPath ?? undefined);
     return Promise.resolve(fwp);
+}
+
+function notAFile(item: DataTransferItem) {
+    return Promise.reject(`${item} is not a File`);
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/FileSystemEntry

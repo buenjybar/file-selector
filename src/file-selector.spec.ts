@@ -304,6 +304,13 @@ it('should use getAsFileSystemHandle when available', async () => {
     expect(file.path).toBe(`./${name}`);
 });
 
+it('should reject when getAsFileSystemHandle resolves to null', async () => {
+    const evt = dragEvtFromItems([
+        dataTransferItemWithFsHandle(null, null)
+    ]);
+    expect(fromEvent(evt)).rejects.toMatch('is not a File');
+});
+
 function dragEvtFromItems(items: DataTransferItem | DataTransferItem[], type: string = 'drop'): DragEvent {
     return {
         type,
@@ -374,7 +381,7 @@ function dataTransferItemFromEntry(entry: FileEntry | DirEntry, file?: File): Da
     } as any;
 }
 
-function dataTransferItemWithFsHandle(file?: File, h?: FileSystemFileHandle): DataTransferItem {
+function dataTransferItemWithFsHandle(file?: File | null, h?: FileSystemFileHandle | null): DataTransferItem {
     return {
         kind: 'file',
         getAsFile() {
@@ -482,7 +489,7 @@ function sortFiles<T extends File>(files: T[]) {
 
 
 interface FileSystemFileHandle {
-    getFile(): Promise<File>;
+    getFile(): Promise<File | null>;
 }
 
 type FileOrDirEntry = FileEntry | DirEntry
